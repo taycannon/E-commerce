@@ -7,10 +7,10 @@ const { Category, Product } = require('../../models');
 //The - Find all categories inculded with it Products
 router.get('/', async (req, res) => {
   try {
-    const categories = await Category.findAll({
+    const categoryData = await Category.findAll({
       include: [{model:Product}],
     });
-    res.status(200).json(categories);
+    res.status(200).json(categoryData);
   }catch (err) {
     res.status(500).json(err);
   }
@@ -36,9 +36,8 @@ router.get('/:id', async (req, res) => {
   
 router.post('/', async (req, res) => {
   try {
-    // Created a new category using the data in the request body
-    const newCategory = await Category.create(req.body);
-    res.status(200).json(newCategory);
+    const categoryData = await Category.create(req.body);
+    res.status(200).json(categoryData);
   } catch (err) {
     res.status(404).json(err);
   }

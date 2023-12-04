@@ -5,24 +5,22 @@ const { Tag, Product, ProductTag } = require('../../models');
 // The `/api/tags` endpoint
 
 //Get all tags
-router.get('/', async(req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const tags = await Tag.findAll({
-      include: Product, // Include associated Product data
+    const tagData = await Tag.findAll({
+      include: [{ model: Product, through: ProductTag, as: 'tag_product_info' }],
     });
-    res.status(200).json(tags);
+    res.status(200).json(tagData);
   } catch (err) {
     res.status(500).json(err);
   }
-  // find all tags
-  // be sure to include its associated Product data
 });
 
 //Get one tag from ID
 router.get('/:id', async (req, res) => {
   try {
-    const tag = await Tag.findByPk(req.params.id, {
-      include: Product,
+    const tagData = await Tag.findByPk(req.params.id, {
+      include: [{ model: Product, through: ProductTag, as: 'tag_product_info' }],
     });
     if (!tag) {
       res.status(404).json({ message: 'Tag not found' });
@@ -45,30 +43,37 @@ router.post('/', async (req, res) => {
 });
 
 //Update a tag's name by ID value
-router.put('/:id', async(req, res) => {
+router.put('/:id', async (req, res) => {
   try {
-    const updatedTag = await Tag.update(req.body, {
-      where: { id: req.params.id },
-    });
-    res.status(200).json(updatedTag);
-  } catch (err) {
-    res.status(400).json(err);
-  }
-});
+    const tagData = await Tag.findByPk(req.params.id);
 
-// Delete on tag by ID value
-router.delete('/:id', async(req, res) => {
-  try {
-    const tag = await Tag.findByPk(req.params.id);
-    if (!tag) {
-      res.status(404).json({ message: 'Tag not found' });
-    } else {
-      await tag.destroy();
-      res.status(200).send(); 
+    if (!tagData) {
+      res.status(404).json({ message: 'No category found with that ID' });
+      return;
     }
+    await tagData.update({
+      tag_name: req.body.tag_name, 
+    });
+    res.status(200).json({ message: 'Category update successfull' });
   } catch (err) {
     res.status(500).json(err);
   }
 });
+
+// Delete on tag by ID value
+router.delete('/:id', async (req, res) => {
+  try {
+    const tagData = await Tag.findByPk(req.params.id);
+    if (!tagData) {
+      res.status(404).json({ message: 'No category found with that id!' });
+      return;
+    }
+    await tagData.destroy();
+    res.status(200).json({ message: 'Category deleted successfully' });
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 
 module.exports = router;
